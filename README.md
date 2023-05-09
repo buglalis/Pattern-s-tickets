@@ -15,7 +15,7 @@
     (Написать Cmake для проекта, состоящего из main.cpp, class1.h,
     class1.cpp. Стандарт С++ - 17.)
     ```Cmake
-    cmake_minimum_required(VERSION "nomber")    # Минимальная потдерживаемая версия Cmake
+    cmake_minimum_required(VERSION "number")    # Минимальная потдерживаемая версия Cmake
     project(PROJECT)                            # Задает имя проекта и сохраняет его в переменной 
     set(CMAKE_CXX_STANDARD 17)                  # Установка используемого стандарта C++
     
