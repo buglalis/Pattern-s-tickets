@@ -10,6 +10,7 @@
 * [Cmake](#Cmake)
 * [Git](#Git)
 * [Class](#Class)
+* [Классы](#Классы)
 
 
 # Cmake
@@ -228,13 +229,143 @@
     </table>
     
     Технически память, выделенная с помощью, newпоступает из «Free Store», а память, выделенная с помощью, mallocпоступает из «кучи». То, являются ли эти две области одинаковыми, является деталью реализации, что является еще одной причиной, по которой mallocих new **НЕЛЬЗЯ СМЕШИВАТЬ**.
+<!-- find_path(MY_LIB_INCLUDE_DIR my_lib.h "<LIB_PATH>/include/my_lib")
+find_library(MY_LIB_MODULE_NAME NAMES lib_module_name PATHS "<LIB_PATH>/lib")
 
+target_include_directories(${PROJECT_NAME} PRIVATE
+                                    ${MY_LIB_INCLUDE_DIR}
+                        )
+target_link_libraries(${PROJECT_NAME} PRIVATE ${MY_LIB_MODULE_NAME}) -->
 
-    <!-- find_path(MY_LIB_INCLUDE_DIR my_lib.h "<LIB_PATH>/include/my_lib")
-    find_library(MY_LIB_MODULE_NAME NAMES lib_module_name PATHS "<LIB_PATH>/lib")
+# Классы
+* ## 28 билет
+        Использование аргументов со значениями по умолчанию в виртуальных функциях
 
-    target_include_directories(${PROJECT_NAME} PRIVATE
-                                      ${MY_LIB_INCLUDE_DIR}
-                          )
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${MY_LIB_MODULE_NAME}) -->
+    Виртуальные функции **связываются динамически** (адреса функций определяются с помощью таблицы виртуальных функций). Обычные функции **связываются статически** (на этапе компиляции). 
 
+    Аргументы по умолчанию тоже связываются статически, т.е. зависят от статического типа.
+
+    То есть запуск такого кода преведёт к ошибке
+    ```c++
+    struct Base {
+        virtual int foo(int x = 14) { return x; }
+    };
+
+    struct Derived: public Base {
+        int foo(int x) override { return x;}
+    };
+
+    int main(){
+            Derived d{};
+            std::cout << d.foo();
+    }
+    ```
+        >> error: no matching function for call to ‘Derived::foo()’
+    Так как аргумент по у молчанию для Derived::foo(int) не определён.
+
+    ```c++
+    struct Base {
+        virtual int foo(int x = 14) { return x; }
+    };
+
+    struct Derived: public Base {
+        int foo(int x = 24) override { return x;}
+    };
+
+    int main(){
+            Derived d{};
+            std::cout << d.foo();
+    }
+    ```
+        >> 24
+
+    > res: лекция 1, слайд 34
+* ## 29 билет
+        NVI. Пример
+
+    **NVI** - non-virtual interfase.
+    Если нужен интерфейс с аргументами по умолчанию, его можно сделать невиртуальным, чтобы никто не смог их переопределить. 
+    ```c++
+    struct BaseNVI {
+        int foo(int x = 14) { return foo_impl(x); }
+    private:
+        virtual int foo_impl(int a) { return a; }
+    };
+
+    struct DerivedNVI: public BaseNVI{
+        int foo_impl(int a) override { return a*2;}
+    };
+
+    int main(){
+        DerivedNVI d{};
+        std::cout << d.foo();
+    }
+    ```
+        >> 28
+    > res: лекция 1, слайд 35
+* ## 30 билет
+        Может ли существовать шаблон виртуального метода?
+    Нет. 
+    > res: лекция 1, слайд 37
+
+* ## 31 билет
+        Можно ли перегружать виртуальные функции?
+    Да.
+    > res: лекция 1, слайд 37
+* ## 32 билет
+        Как добавить в overloading set класса-наследника методы базового класса являющиеся перегрузками виртуального метода?
+    ```c++
+    struct Matrix{
+        virtual void pow(double x) { cout << "Matrix double: " << x << endl; }
+        virtual void pow(int x) { cout << "Matrix int: " << x << endl; }
+    };
+
+    struct SparceMatrix: Matrix{
+        void pow(int x) { cout << "SparceMatrix int: " << x << endl; }
+    };
+
+    int main(){
+        Matrix* m = new SparceMatrix;
+        m->pow(1.5);
+        m->pow(4);
+        SparceMatrix sm;
+        sm.pow(1.5);
+        sm.pow(4);
+    }
+    ```
+        >> Matrix double: 1.5
+        >> SparceMatrix int: 4
+
+        >> SparceMatrix int: 1
+        >> SparceMatrix int: 4
+
+    Как сделать поведение более предсказуемым? Ввести в область видимости функции Matrix с использованием using
+
+    ```c++
+        struct Matrix{
+        virtual void pow(double x) { cout << "Matrix double: " << x << endl; }
+        virtual void pow(int x) { cout << "Matrix int: " << x << endl; }
+    };
+
+    struct SparceMatrix: Matrix{
+        using Matrix::pow;
+        void pow(int x) { cout << "SparceMatrix int: " << x << endl; }
+    };
+
+    int main(){
+        Matrix* m = new SparceMatrix;
+        m->pow(1.5);
+        m->pow(4);
+        SparceMatrix sm;
+        sm.pow(1.5);
+        sm.pow(4);
+    }
+    ```
+        >> Matrix double: 1.5
+        >> SparceMatrix int: 4
+
+        >> Matrix double: 1.5
+        >> SparceMatrix int: 4
+    > res: лекция 1, слайд 38
+
+    
