@@ -11,6 +11,7 @@
 * [Git](#Git)
 * [Class](#Class)
 * [goto](#Goto)
+* [SFINAE](#SFINAE)
 
 
 # Cmake
@@ -726,7 +727,7 @@
     void f(char* const x);       // ERROR 
     ```
     
-    - к cv-квалификаторам внешнего типа (квалификаторы, ограничивающие изменение внешней переменной), это не относиться:
+    - к cv-квалификаторам внешнего типа (квалификаторы, ограничивающие изменение внешней переменной), это не относится:
     ``` c++
     void f(int& x);
     void f(const int& x);        // OK
@@ -774,4 +775,80 @@
     
     int x, y;
     foo(x, &y);                                     // вызовет 2
+    ```
+
+# SFINAE
+
+* ## 58 билет
+    (SFINAE. Определение)
+    
+    **SFINAE** - _Substitution Failure Is Not An Error_ - провал подстановки не является ошибкой
+    ``` c++
+    template<typename T> T max(T, T);                   // 1
+    template<typename T1, template T2> T max(T1, T2);   // 2
+    
+    auto max(1, 2.);                                    // подстановка в 1 провалена
+                                                        // подстановка в 2 успешна
+                                                        // код работает!
+    ```
+
+* ## 59 билет
+    (Зачем в старом С++ (до С++11) для реализации SFINAE создавались структуры разных размеров?)
+    
+    Структуры разных размеров нужны, чтобы на этапе компиляции определить, какая из перегруженных функций была вызвана. Например, мы хотим определить, есть ли у класса метод sort()
+    ``` c++
+    // создаем структуры разных размеров
+    struct yes { char c1; };            // sort() есть
+    struct no { char c1; char c2; };    // sort() нет
+    
+    template <typename T> 
+    yes have_sort (decltype(&T::sort)); // в качестве аргумента подаем тип данных метода sort()
+    
+    template <typename T> 
+    no have_sort (...);                 // многоточие вызывается в самом последнем случае,
+                                        // то есть если предыдущая подстановка не удалась,
+                                        // а она не удастся только если нет метода sort()
+                    
+    template <typename T>
+    void check_sort(T x){
+        if ( sizeof( have_sort<T>(NULL) ) == sizeof( yes ) ){   // размер возвращаемого типа равен yes,
+                                                                // значит первая подстановка выполнена
+                                                                // успешно, а следовательно sort() есть
+            std::cout << "have sort()" << std::endl;
+        } else {
+            std::cout << "haven't sort()" << std::endl;
+        }
+    }
+    
+    ```
+
+* ## 60 билет
+    (Замена структурам разных размеров в современном С++)
+    
+    В C++11 был добавлен класс [_std::integral_constant_](https://en.cppreference.com/w/cpp/types/integral_constant). А также два его typedef'a: ```std::true_type``` и ```std::false_type```. И теперь мы можем избавиться от лишних структур:
+    ``` c++
+    template <typename T> 
+    std::true_type have_sort (decltype(&T::sort));
+    
+    template <typename T> 
+    std::false_type have_sort (...);  
+                    
+    template <typename T>
+    void check_sort(T x){
+        if ( have_sort<T>(NULL).value ){        // у std::true_type value = true
+            std::cout << "have sort()" << std::endl;
+        } else {
+            std::cout << "haven't sort()" << std::endl;
+        }
+    }
+    ```
+        
+    Еще был добавлен [_std::enable_if_](https://learn.microsoft.com/ru-ru/cpp/standard-library/enable-if-class?view=msvc-170), что тоже может упростить реализацию SFINAE.
+    ``` c++
+    bool flag;
+    
+    template <typename T>
+    std::enable_if<flag, T> f(T x);        
+    // если flag == true, то std::enable_if<flag, T> эквивалентен T
+    // если false, то происходит ошибка подстановки
     ```
