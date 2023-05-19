@@ -965,9 +965,29 @@
     ![](https://i.postimg.cc/xCLMwBNq/Screenshot-from-2023-05-19-09-25-34.png)
     ![](https://i.postimg.cc/KvxwH23k/5.png)
 
+    > res: https://www.youtube.com/watch?v=MsuddUd7E2A&ab_channel=KonstantinVladimirov
+
 * ## 55 билет
-    (Что делает decltype?)
+    (Что делает decltype?)  
+    Выводит точный тип аргумента. Но есть особенности, если писать decltype от выражения. Они показаны ниже.  
+    ![](https://i.postimg.cc/SNT0WTQz/Screenshot-from-2023-05-19-09-25-39.png)
+    ![](https://i.postimg.cc/63jVHv8z/Screenshot-from-2023-05-19-09-40-46.png)
+    > res: https://www.youtube.com/watch?v=MsuddUd7E2A&ab_channel=KonstantinVladimirov
+
+* ## 56 билет
+    Если нужен точный тип, то decltype. Если же готовы получить деградированный тип, то auto. Еще auto используется в случаях, когда тип возвращаемого значения неизвестен(в функциях например).
+    > res: https://www.youtube.com/watch?v=MsuddUd7E2A&ab_channel=KonstantinVladimirov
+
+* ## 57 билет
+    (Когда С++ осуществляет «ленивые», а не «энергичные» вычисления?)
+    В C++ ленивыми вычислениями являются:
+    * Сокращенные вычисления(Это означает, что если после вычисления одной части выражения ясен конечный результат, то остальная часть выражения не вычисляется)
+    * Инстанцирование шаблонов    
     
+    Понятия ленивость и энергичность объяснены на слайде.  
+
+    ![](https://i.postimg.cc/NjYPKZHc/Screenshot-from-2023-05-19-09-47-53.png)
+
 
 # SFINAE
 
